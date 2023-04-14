@@ -6,7 +6,7 @@
 
 The ability to conduct semantic search on vector data is a powerful feature that allows you to find relevant content based on a specific query. This demo is helpful for showcasing and comprehending the abstract responses generated from your own data in PDF or Word format.
 
-This solution is built on inspiration from existing Chat GPT and Document Q&A demos, however it uses a simplified architecture pattern and following features.
+This solution is built on inspiration from existing Chat GPT and Document Q&A demos, however it uses a simplified architecture pattern and offers following features.
 
 ## Features
 - Simplified architecture
