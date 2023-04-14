@@ -15,6 +15,7 @@ This solution is built on inspiration from existing Chat GPT and Document Q&A de
 
 ## How to deploy?
 **Run locally from Visual Studio Code or command line**
+- Open VS Code terminal.
 - Clone this repository and open in VS Code
 - Create a new conda environment
 - Navigate to misc disrectory and run _pip install -r requirements.txt_
@@ -39,6 +40,8 @@ This solution is built on inspiration from existing Chat GPT and Document Q&A de
     - REDIS_HOST=<REDIS_HOST_URL>
     - REDIS_ACCESS_KEY=<REDIS_PWD>
     - REDIS_PORT=<REDIS_PORT>
+- Navigate to /app directory and run following command from VS Code terminal. This will open the App UI in a browser window.
+    - streamlit run app.py
 
 **To Azure**
 - More info will be added soon.

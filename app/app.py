@@ -34,7 +34,7 @@ prompt_min_length = 5
 ms_alias_min_length = 6
 prompt_text_area_max_chars = 300
 temp_dir = '../temp_uploads/' #Where uploaded files get staged until they are indexed, files staged for few seconds only then deleted.
-app_version = '0.8' #Equal to docker image version tag, shown in sidebar.
+app_version = '0.9' #Equal to docker image version tag, shown in sidebar.
 
 #--------------------------------------------------------------------------
 # Get connection
@@ -222,7 +222,8 @@ with st.container():
         checkbox_page_no = st.checkbox(label='Page No',key='checkbox_page_no', value=True, help='Document page number.')    
         checkbox_show_fileupload = st.checkbox(label='Upload file',key='checkbox_show_fileupload', value=False, help='Upload file using upload widget.')
 
-        st.write('### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ###')
+        st.write('### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ### \n ###')
+        st.write("[Github Repo](https://github.com/MaheshSQL/openai-vector-search-demo)")
         st.caption('Version: '+app_version)
         st.write('<p style="font-size:14px; color:black;"><b>Powered by Azure OpenAI</b></p>', unsafe_allow_html=True)
     
