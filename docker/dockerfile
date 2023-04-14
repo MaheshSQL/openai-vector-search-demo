@@ -1,0 +1,18 @@
+FROM python:3.9.0
+EXPOSE 8501
+CMD mkdir -p /app
+CMD mkdir -p /modules
+CMD mkdir -p /temp_uploads
+CMD mkdir -p /images
+
+WORKDIR .
+COPY ../misc/requirements.txt ./
+RUN pip3 install -r requirements.txt
+
+COPY ../app/app.py app/
+COPY ../modules/utilities.py modules/
+COPY ../images images/
+
+WORKDIR /app
+ENTRYPOINT ["streamlit", "run"]
+CMD ["app.py"]

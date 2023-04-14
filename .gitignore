@@ -1,0 +1,4 @@
+__pycache__
+./scripts/*
+.env
+./temp_uploads/*
