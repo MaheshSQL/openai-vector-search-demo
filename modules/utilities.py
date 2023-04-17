@@ -33,8 +33,6 @@ import numpy as np
 
 #------------Notes-------------------
 
-# 1) Redis created as ACI (to keep costs down, step log in OneNote -> Demos ->..)
-# 2) Pending - Testing by Privisoning Redis Enterprise SKU (E10 or above, expensive), remeber to enable the Search module during provisioning.
 
 #------------Functions---------------
 
