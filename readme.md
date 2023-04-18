@@ -11,6 +11,7 @@ This solution is built on inspiration from existing Chat GPT and Document Q&A de
 ## Features
 - Simplified architecture
 - Built-in document cracking (.pdf, .docx)
+- Utilise text embeddings
 - Upload own document and ask questions
 
 ## How to deploy?
