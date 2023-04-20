@@ -1,14 +1,3 @@
-# env: openaidemo1
-# pip install openai
-# pip install tiktoken
-# pip install redis
-# pip install langchain==0.0.132
-# pip install pypdf #For PyPDFLoader 
-# pip install python-dotenv
-# pip install pandas
-# pip install unstructured #For MS Word doc/docx read
-# pip install streamlit
-
 #------------Imports---------------
 import os
 
@@ -277,8 +266,7 @@ def createRedisIndex(az_redis_connection, index_name='page_embeddings_index' , p
             response = az_redis_connection.ft(index_name).create_index(
             fields = [page_content,page_number,document_path,page_content_vector],
             definition = IndexDefinition(
-                # prefix=[f'{prefix}:'], 
-                prefix=f'{prefix}:',
+                prefix=[f'{prefix}:'],                 
                 index_type=IndexType.HASH)
             )
         else:
