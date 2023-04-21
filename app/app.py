@@ -15,6 +15,11 @@ load_dotenv()
 #Set env variables
 setEnv()
 
+# Exit if app set to MAINTENANCE_MODE (yes, no)
+if str(os.getenv('MAINTENANCE_MODE')).lower()=='yes':    
+    st.write('App is currently offline for maintenance, please check back later.')
+    exit()
+
 aoai_embedding_model = 'text-search-davinci-doc-001' #'text-search-ada-doc-001'
 aoai_embedding_model_version = '1'
 
@@ -28,13 +33,12 @@ aoai_embedding_model_dim = aoai_embedding_models[aoai_embedding_model]["version"
 
 aoai_text_model_deployment = aoai_embedding_models[aoai_text_model]["version"][aoai_text_model_version]["deployment_name"] #Azure OpenAI deployment name
 
-# top_n = 3 #How many answers to retrieve from index
 score_threshold = 50 #Show answers above or equal to this score threshold
 prompt_min_length = 5
 ms_alias_min_length = 6
 prompt_text_area_max_chars = 300
 temp_dir = '../temp_uploads/' #Where uploaded files get staged until they are indexed, files staged for few seconds only then deleted.
-app_version = '0.9' #Equal to docker image version tag, shown in sidebar.
+app_version = '0.9.7' #Equal to docker image version tag, shown in sidebar.
 
 #--------------------------------------------------------------------------
 # Get connection
@@ -52,11 +56,10 @@ def getKeywordList(input_text):
     return keyword_list
 
 def highlightKeywords(keyword_list, input_text):
-    highlighted = " ".join(f'<span style="background-color: #ffff99">{t}</span>' if t.lower() in keyword_list else t for t in input_text.split())
+    highlighted = " ".join(f'<span style="background-color: #ffff99">{t}</span>' if t.lower() in keyword_list else t for t in input_text.split(' '))    
+    # print(f'highlighted:{highlighted}')   
+    
     return highlighted
-
-# print(getKeywordList('What is HREC approval timeline?'))
-# print(highlightKeywords(getKeywordList("What's weather?"),'Today is a great day as we have some good weather'))
 
 def getResult(prompt, top_n, index_name):
 
@@ -91,16 +94,8 @@ def getResult(prompt, top_n, index_name):
         # print(results[0][1]) #top first answer index    
 
         # Top N answers
-        for i in range(top_n):
+        for i in range(top_n):           
             
-            # Uncomment to debug
-            # print(f"\nAnswer: {results[i][2]}") #answer 
-            # print(f"Score: {results[i][0]}") #answer score
-            # print(bcolors.OKGREEN+f"Content {str(i+1)}: {chain_out['input_documents'][results[i][1]].page_content}"+bcolors.ENDC) #content
-            # print(bcolors.BOLD+f"Source {str(i+1)}: {chain_out['input_documents'][results[i][1]].metadata['source']}"+bcolors.ENDC) #source
-            # print(f"Similarity {str(i+1)}: {chain_out['input_documents'][results[i][1]].metadata['similarity']}") #similarity score
-            # print(f"Page: {int(chain_out['input_documents'][results[i][1]].metadata['page'])+1}") #page
-
             # Check score threshold
             if int(results[i][0]) >= score_threshold:
                 out_item = None
@@ -112,7 +107,7 @@ def getResult(prompt, top_n, index_name):
                     f"Similarity": chain_out['input_documents'][results[i][1]].metadata['similarity'],
                     f"Page": int(chain_out['input_documents'][results[i][1]].metadata['page'])+1
                     }
-                out.append(out_item)        
+                out.append(out_item)      
     
 
     return out    
@@ -149,17 +144,13 @@ with st.container():
             local_file_path = str(local_file)
             # print(local_file_path)
 
-            progress_bar.progress(20,'File acquired')
-
-            # # Crack open PDF doc
-            # document_pages_lc = readPDF(local_file_path)
-            # print((document_pages_lc[0]))            
+            progress_bar.progress(20,'File acquired')                      
 
             progress_bar.progress(30,'Backend connected')
 
             # Create index if it does not exist
             result = createRedisIndex(az_redis_connection=az_redis, index_name=textbox_msalias , prefix = textbox_msalias, 
-                                    distance_metric='COSINE', DIM = aoai_embedding_model_dim, vec_type='FLAT') 
+                                    distance_metric='COSINE', DIM = aoai_embedding_model_dim, vec_type='HNSW') 
             print(f'Create index result:{result}')
 
             progress_bar.progress(40,'Processing')
@@ -199,7 +190,7 @@ with st.container():
             left_column.warning('Please enter a valid alias')
 
     top_left_column, middle_left_column, right_left_column = st.columns([40,20,40])
-    top_left_column_1, top_left_column_2 = top_left_column.columns([20,80])
+    top_left_column_1, top_left_column_2 = top_left_column.columns([25,75])
     top_left_column_1.image(image='../images/logo_black.png', width=100)
     # top_left_column_2.write('###')
     top_left_column_2.subheader('Semantic Search Demo')    
@@ -211,10 +202,10 @@ with st.container():
                     
         st.markdown(':gear: Settings')
 
-        #Updated for general user
-        textbox_msalias = st.text_input(label='Alias*', max_chars=10, key='textbox_msalias', type='password', value='demouser',label_visibility='visible', disabled=True)
-
-        selectbox_top_n = st.selectbox(label='Top N results*',options=(1,2,3,4,5), index = 4, key='selectbox_top_n')        
+        textbox_msalias = st.text_input(label='Unique alias*', max_chars=10, key='textbox_msalias', type='password', 
+                                        help='''Unique text value to store/query your docs under. 
+                                        Use same value when you revisit this app in future for consistent experience.''')
+        selectbox_top_n = st.selectbox(label='Top N results*',options=(3,5,10), index = 2, key='selectbox_top_n')        
 
         checkbox_score = st.checkbox(label='Score',key='checkbox_score', value=False, help='Value between 0 to 100 suggesting LLM confidence for answering the question by with retrieved passage of text.')
         checkbox_similarity = st.checkbox(label='Similarity',key='checkbox_similarity', value=False, help='Similarity between the query and retrieved passage of text.')   
@@ -237,18 +228,21 @@ with st.container():
         # middle_column_b.write('###')    
         upload_button = middle_column_12.button(label='Upload', on_click=upload_button_click)       
         
+        #fffce7
         right_column_13.write('''<b><u>Disclaimer</u></b> 
-                        \n <p style="font-size:16px; color:black;background-color:#fffce7">This demo app is not intended for use with sensitive data. 
+                        \n <p style="font-size:16px; color:black;background-color:#f7b0b0">This public demo app is <b>not intended for use with sensitive data</b>. 
                         We strongly advise against uploading any sensitive data to this application. 
                         We cannot guarantee the security of any data uploaded to this application. By using this application, you acknowledge that you understand and accept this risk.
-                        Please use <b>publically available data</b> only.</p>''',unsafe_allow_html=True)
+                        Please use <b>publicly available data</b> only.</p>
+                        \n <p style="font-size:16px; color:black;background-color:#f7b0b0"><i>For use with sensitive documents, please clone the repository and run it in your own environment.</i></p>'''
+                        ,unsafe_allow_html=True)
         st.write('----')       
         
 
 with st.container():
 
     # left_column, middle_column, right_column = st.columns([46,8,46])
-    left_column, middle_column, right_column = st.columns([60,8,32])
+    left_column, middle_column, right_column = st.columns([60,10,30])
     
     prompt = left_column.text_area(label='Enter your question:',max_chars=prompt_text_area_max_chars, key='text_area1', label_visibility ='hidden')    
 
@@ -269,7 +263,7 @@ with st.container():
 
             #No results retrieved
             if len(answer)==0:
-                left_column.warning('No results found. Consider uploading document/s first if you are using this app for the first time for alias you have specified. \n Show upload --> Browse file --> Click Upload to get started.')
+                left_column.warning('No results found. Consider uploading document/s first if you are using this app for the first time for unique alias you have specified. \n Check Upload file --> Browse file --> Click Upload to get started.')
 
             #Populate bottom pane with all N responses
             for ans_details in answer:

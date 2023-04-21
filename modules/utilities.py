@@ -19,9 +19,10 @@ from redis.commands.search.query import Query
 import hashlib
 import numpy as np
 
+import logging
 
-#------------Notes-------------------
 
+logging.basicConfig(level=logging.ERROR)
 
 #------------Functions---------------
 
@@ -40,7 +41,7 @@ def readPDF(source_url):
 
         return document_pages_lc
     except Exception as e:
-        print(f'Error readPDF(): {e}')
+        logging.error(f'Error readPDF(): {e}')
         return None
 
 '''Read MS Word documents and return the list of langchain documents
@@ -73,7 +74,7 @@ def readMSWord(source_url):
         
         return document_pages_lc_list
     except Exception as e:
-        print(f'Error readMSWord_old(): {e}')
+        logging.error(f'Error readMSWord_old(): {e}')
         return None
     
 '''
@@ -88,8 +89,14 @@ def setEnv():
         
         return True
     except Exception as e:
-        print(f'Error setEnv(): {e}')    
+        logging.error(f'Error setEnv(): {e}')    
         return False
+
+'''
+input_text: input text
+'''
+def encode(input_text):
+    return str(hashlib.sha1(f'{input_text}'.encode('utf-8')).hexdigest())
 
 '''
 txt_data: input data
@@ -103,8 +110,8 @@ def getEmbedding(txt_data, aoai_embedding_model, chunk_size=1, max_retries = 3):
         query_result = embeddings.embed_query(txt_data)
         return query_result
     except Exception as e:
-        print(f'Error getEmbedding(): {e}')
-        print(f'txt_data: {txt_data}')    
+        logging.info(f'txt_data: {txt_data}')
+        logging.error(f'Error getEmbedding(): {e}')        
         return None
 
 
@@ -115,7 +122,7 @@ def getDocumentExtension(documentPath):
     try:
         return os.path.basename(documentPath).split('.')[len(os.path.basename(documentPath).split('.'))-1]
     except Exception as e:
-        print(f'Error getDocumentExtension(): {e}')    
+        logging.error(f'Error getDocumentExtension(): {e}')    
         return None
 
 '''
@@ -130,7 +137,7 @@ def cleanseText(input_text):
 
         return input_text_cleansed
     except Exception as e:
-        print(f'Error cleanseText(): {e}')
+        logging.error(f'Error cleanseText(): {e}')
         return None
 
 '''
@@ -186,15 +193,15 @@ def getEmbeddingEntireDoc(documentPath, aoai_embedding_model, chunk_size=1):
             # print(source_doc_page_no)
             # print(source_doc_page_content)
 
-            source_doc_page_content = cleanseText(source_doc_page_content)
+            source_doc_page_content_cleansed = cleanseText(source_doc_page_content)
 
-            if (source_doc_page_content) is not None and (len(source_doc_page_content)>0) and (source_doc_page_content.strip != ''):                    
+            if (source_doc_page_content_cleansed) is not None and (len(source_doc_page_content_cleansed)>0) and (source_doc_page_content_cleansed.strip != ''):                    
 
-                embedding_result = getEmbedding(source_doc_page_content, aoai_embedding_model, chunk_size=1, max_retries = 3)
+                embedding_result = getEmbedding(source_doc_page_content_cleansed, aoai_embedding_model, chunk_size=1, max_retries = 3)
                 # print(embedding_result)
 
                 if embedding_result is not None:
-                    document_page_content_list.append(source_doc_page_content)
+                    document_page_content_list.append(source_doc_page_content) #Retain formatting
                     document_page_embedding_list.append(embedding_result)        
                     document_page_no_list.append(source_doc_page_no)
                 else:
@@ -202,7 +209,7 @@ def getEmbeddingEntireDoc(documentPath, aoai_embedding_model, chunk_size=1):
 
         return document_page_content_list, document_page_embedding_list, document_page_no_list
     except Exception as e:
-        print(f'Error getEmbeddingEntireDoc(): {e}')
+        logging.error(f'Error getEmbeddingEntireDoc(): {e}')
         return None, None, None        
 
 '''
@@ -219,22 +226,28 @@ def getRedisConnection(host, access_key, port=6380, ssl=True):
                             ssl=ssl)
         return az_redis
     except Exception as e:
-        print(f'Error getRedisConnection(): {e}')
+        logging.error(f'Error getRedisConnection(): {e}')
         return None
 
-def checkRedisIndexExists(index_name, az_redis_connection):
+def checkRedisIndexExists(index_name, az_redis_connection, encrypt_index_name=False):
     try:
+        if encrypt_index_name:
+            index_name = encode(index_name)
+
         az_redis_connection.ft(index_name).info()
         return True
     except: 
         return False
 
-def dropRedisIndex(az_redis_connection, index_name='page_embeddings_index'):
+def dropRedisIndex(az_redis_connection, index_name='page_embeddings_index', encrypt_index_name=False):
     try:
+        if encrypt_index_name:
+            index_name = encode(index_name)
+
         az_redis_connection.ft(index_name).dropindex(delete_documents=False)
         return True
     except Exception as e:
-        print(f'Error dropRedisIndex(): {e}')
+        logging.error(f'Error dropRedisIndex(): {e}')
         return False 
                      
 '''
@@ -243,9 +256,12 @@ index_name: Redis index name
 prefix: Key prefix
 distance_metric: Vector field distance metrics
 '''
-def createRedisIndex(az_redis_connection, index_name='page_embeddings_index' , prefix = 'doc', distance_metric='COSINE', DIM = 1536, vec_type = 'HNSW'):
+def createRedisIndex(az_redis_connection, index_name='page_embeddings_index' , prefix = 'doc', distance_metric='COSINE', DIM = 1536, vec_type = 'HNSW', encrypt_index_name=False):
     try:
         response = None
+
+        if encrypt_index_name:            
+            index_name = encode(index_name)            
 
         if checkRedisIndexExists(index_name, az_redis_connection)==False:
 
@@ -258,7 +274,7 @@ def createRedisIndex(az_redis_connection, index_name='page_embeddings_index' , p
                             "TYPE": "FLOAT32",
                             "DIM": DIM,
                             "DISTANCE_METRIC": distance_metric,
-                            "INITIAL_CAP": 1000
+                            "INITIAL_CAP": 1000                            
                         })
             
             
@@ -266,7 +282,7 @@ def createRedisIndex(az_redis_connection, index_name='page_embeddings_index' , p
             response = az_redis_connection.ft(index_name).create_index(
             fields = [page_content,page_number,document_path,page_content_vector],
             definition = IndexDefinition(
-                prefix=[f'{prefix}:'],                 
+                prefix=[f'{prefix}:'], #Sqaure bracket important!                
                 index_type=IndexType.HASH)
             )
         else:
@@ -275,7 +291,7 @@ def createRedisIndex(az_redis_connection, index_name='page_embeddings_index' , p
         return response
 
     except Exception as e:
-        print(f'Error createRedisIndex(): {e}')
+        logging.error(f'Error createRedisIndex(): {e}')
         return None
 
 def addRedisIndexRecord(az_redis_connection, id, page_content, page_content_vector, page_number, documentPath, prefix = 'doc'):
@@ -309,14 +325,18 @@ def addRedisIndexRecord(az_redis_connection, id, page_content, page_content_vect
         return True
 
     except Exception as e:        
-        print(f'Error addRedisIndexRecord(): {e}')
+        logging.error(f'Error addRedisIndexRecord(): {e}')
         return False
 
 '''
 Iterate over read document and add it to the index
 '''
-def addDocumentToRedis(az_redis_connection, documentPath, document_page_content_list, document_page_embedding_list, document_page_no_list, prefix):
+def addDocumentToRedis(az_redis_connection, documentPath, document_page_content_list, document_page_embedding_list, document_page_no_list, prefix, encrypt_prefix=False):
     try:
+
+        if encrypt_prefix:            
+            prefix = encode(prefix)
+            
 
         # Iterate through pages
         for i, embedding in enumerate(document_page_embedding_list):   
@@ -335,7 +355,7 @@ def addDocumentToRedis(az_redis_connection, documentPath, document_page_content_
 
         return True
     except Exception as e:
-        print(f'Error addDocumentToRedis(): {e}')
+        logging.error(f'Error addDocumentToRedis(): {e}')
         return False
 
 '''
@@ -345,10 +365,13 @@ aoai_embedding_model: Azure OpenAI model for prompt embedding
 index_name: Redis index name
 top_n: Return top_n close matches
 '''    
-def queryRedis(az_redis_connection, prompt, aoai_embedding_model, index_name, top_n):
+def queryRedis(az_redis_connection, prompt, aoai_embedding_model, index_name, top_n, encrypt_index_name=False):
     try:
 
         document_lc_list = []
+
+        if encrypt_index_name:
+            index_name = encode(index_name)
 
         vec_prompt = getEmbedding(txt_data=prompt, aoai_embedding_model=aoai_embedding_model, chunk_size=1, max_retries = 3)
         vec_prompt = np.array(vec_prompt, dtype=np.float32)  #Super important to specify dtype, otherwise vector share mismatch error.
@@ -360,7 +383,7 @@ def queryRedis(az_redis_connection, prompt, aoai_embedding_model, index_name, to
             .sort_by("__page_content_vector_score") #asc = False, relevance in desc order.
             .paging(0,top_n)
             .return_fields('__page_content_vector_score','page_content','page_number', 'document_path')
-            .dialect(2)
+            .dialect(2)            
         )       
 
         query_result = az_redis_connection.ft(index_name).search(query, {"prompt_vector": vec_prompt.tobytes()})
@@ -374,7 +397,7 @@ def queryRedis(az_redis_connection, prompt, aoai_embedding_model, index_name, to
         return query_result, document_lc_list
 
     except Exception as e:
-        print(f'Error queryRedis(): {e}')
+        logging.error(f'Error queryRedis(): {e}')
         return None, None
 
 #-----------------------------------

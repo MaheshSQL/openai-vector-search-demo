@@ -4,11 +4,13 @@
 
 ## About
 
+Version: 0.9.7
+
 The ability to conduct semantic search on vector data is a powerful feature that allows you to find relevant content based on a specific query. This demo is helpful for showcasing and comprehending the abstract responses generated from your own data in PDF or Word format.
 
 This solution is built on inspiration from existing Chat GPT and Document Q&A demos, however it uses a simplified architecture pattern and offers following features.
 
-## Features
+## Key Features
 - Simplified architecture
 - Built-in document cracking (.pdf, .docx)
 - Utilise text embeddings
@@ -19,11 +21,15 @@ This solution is built on inspiration from existing Chat GPT and Document Q&A de
 - Open VS Code terminal.
 - Clone this repository and open in VS Code
 - Create a new conda environment
+    - conda create -n openaidemo_py39 python=3.9 anaconda
+    - conda activate
+    - [Conda docs](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-python.html) 
 - Navigate to misc disrectory and run _pip install -r requirements.txt_
 - Provision Azure OpenAI service
     - Under deployments within Azure OpenAI Studio, deploy 2 models
     - Model for text search e.g. text-search-davinci-doc-001
     - Model for text generation e.g. text-davinci-003
+    - Model availability varies by region in which OpenAI service is provisioned in Azure.
 - Open modules/utilities.py file and scroll to very bottom
     - Update value for "deployment_name" tag for respective model version.
 - If you have used the 2 models mentioned in steps above, no changes are required in app/app.py file.
@@ -31,18 +37,19 @@ This solution is built on inspiration from existing Chat GPT and Document Q&A de
 - Provision Redis stack as Azure Container Instance
     - Use image = redis/redis-stack-server:latest
     - On advanced tab make sure you add
-        - --requirepass <your_redis_pwd>
+        - --requirepass <your_strong_redis_pwd>
     - Alternatively, you may run the Redis stack in local docker environment. In this case, you do not require to provision it as ACI service.
-- Almost there. Create .env file within same directory as this readme.md file and add below keys. Replace placeholders with correct values.
-    - OPENAI_API_TYPE=azure
-    - OPENAI_API_KEY=<YOUR_AOAI_KEY>
-    - OPENAI_API_BASE=https://<YOUR_AOAI_SERVICE_NAME>.openai.azure.com
-    - API_VERSION=2022-12-01
-    - REDIS_HOST=<REDIS_HOST_URL>
-    - REDIS_ACCESS_KEY=<REDIS_PWD>
-    - REDIS_PORT=<REDIS_PORT>
+- Almost there. Rename .env_template file to .env 
+    - Renamed file should be placed  within same directory as this readme.md file. 
+    - Replace placeholders with correct values.    
 - Navigate to /app directory and run following command from VS Code terminal. This will open the App UI in a browser window.
     - streamlit run app.py
+
+**Run as docker container**
+- Complete all configuration steps from section above before running any steps below.
+- docker build -t oaisearch:0.9.7 -f ./docker/dockerfile .
+- docker run -d -p 8501:8501 oaisearch:0.9.7
+- Open web browser and go to http://localhost:8501 to see the app
 
 **To Azure**
 - More info will be added soon.
