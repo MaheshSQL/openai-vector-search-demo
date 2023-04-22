@@ -6,24 +6,24 @@
 
 Version: 0.9.7
 
-The ability to conduct semantic search on vector data is a powerful feature that allows you to find relevant content based on a specific query. This demo is helpful for showcasing and comprehending the abstract responses generated from your own data in PDF or Word format.
+The ability to conduct semantic search on vector data is a powerful feature that allows you to find relevant content based on a specific natural language query. This demo is helpful for showcasing and comprehending the abstractive responses generated from your own data in PDF or Word format documents.
 
-This solution is built on inspiration from existing Chat GPT and Document Q&A demos, however it uses a simplified architecture pattern and offers following features.
+This solution has been created by drawing inspiration from existing Enterprise Chat GPT and Document Q&A vector search demos, however it uses a simplified architecture pattern and offers following features, most of which are unique to this implementation.
 
 ## Key Features
-- Simplified architecture
-- Built-in document cracking (.pdf, .docx)
-- Utilise text embeddings
-- Upload own document and ask questions
+- _Simplified architecture_
+- _Built-in document cracking (.pdf, .docx)_
+- _Utilise text embeddings_
+- _Upload own document and ask questions_
 
 ## How to deploy?
 **Run locally from Visual Studio Code or command line**
 - Open VS Code terminal.
 - Clone this repository and open in VS Code
 - Create a new conda environment
-    - conda create -n openaidemo_py39 python=3.9 anaconda
-    - conda activate
-    - [Conda docs](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-python.html) 
+    - ```conda create -n openaidemo_py39 python=3.9 anaconda```
+    - ```conda activate```
+    - [Conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-python.html) 
 - Navigate to misc disrectory and run _pip install -r requirements.txt_
 - Provision Azure OpenAI service
     - Under deployments within Azure OpenAI Studio, deploy 2 models
@@ -43,12 +43,12 @@ This solution is built on inspiration from existing Chat GPT and Document Q&A de
     - Renamed file should be placed  within same directory as this readme.md file. 
     - Replace placeholders with correct values.    
 - Navigate to /app directory and run following command from VS Code terminal. This will open the App UI in a browser window.
-    - streamlit run app.py
+    - ```streamlit run app.py```
 
-**Run as docker container**
+**Run as a local docker container**
 - Complete all configuration steps from section above before running any steps below.
-- docker build -t oaisearch:0.9.7 -f ./docker/dockerfile .
-- docker run -d -p 8501:8501 oaisearch:0.9.7
+- ```docker build -t oaisearch:0.9.7 -f ./docker/dockerfile .```
+- ```docker run -d -p 8501:8501 oaisearch:0.9.7```
 - Open web browser and go to http://localhost:8501 to see the app
 
 **To Azure**
@@ -57,3 +57,6 @@ This solution is built on inspiration from existing Chat GPT and Document Q&A de
 ## Other important information
 - [Create a resource and deploy a model using Azure OpenAI](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource)
 - [Quickstart: Deploy a container instance in Azure using the Azure portal](https://learn.microsoft.com/en-us/azure/container-instances/container-instances-quickstart-portal)
+
+## Looking for Azure Cognitive Semantic Search | Large documents with OpenAI enrichment?
+- [Azure Cognitive Semantic Search | Large documents | OpenAI enrichment](https://github.com/MaheshSQL/cognitive-semantic-search-openai-accelerator)
