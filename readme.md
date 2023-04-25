@@ -17,12 +17,12 @@ This solution has been created by drawing inspiration from existing Enterprise C
 - _Upload own document and ask questions_
 
 ## How to deploy?
-**Run locally from Visual Studio Code or command line**
-- Open VS Code terminal.
-- Clone this repository and open in VS Code
+**Run locally from Visual Studio Code or command prompt**
+- Open VS Code terminal or command prompt.
+- Clone this repository and open in VS Code.
 - Create a new conda environment
     - ```conda create -n openaidemo_py39 python=3.9 anaconda```
-    - ```conda activate```
+    - ```conda activate openaidemo_py39```
     - For more info go to [Conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-python.html) 
 - Navigate to misc disrectory and run _pip install -r requirements.txt_
 - Provision Azure OpenAI service
