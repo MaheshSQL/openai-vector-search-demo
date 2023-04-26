@@ -24,7 +24,8 @@ This solution has been created by drawing inspiration from existing Enterprise C
     - ```conda create -n openaidemo_py39 python=3.9 anaconda```
     - ```conda activate openaidemo_py39```
     - For more info go to [Conda documentation](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-python.html) 
-- Navigate to misc disrectory and run _pip install -r requirements.txt_
+- Navigate to _misc_ directory and run 
+    - ```pip install -r requirements.txt```
 - Provision Azure OpenAI service
     - Under deployments within Azure OpenAI Studio, deploy 2 models
     - Model for text search e.g. text-search-davinci-doc-001
