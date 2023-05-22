@@ -59,3 +59,6 @@ This solution has been created by drawing inspiration from existing Enterprise C
 
 ## Looking for Azure Cognitive Semantic Search | Large documents with OpenAI enrichment?
 - [Azure Cognitive Semantic Search | Large documents | OpenAI enrichment](https://github.com/MaheshSQL/cognitive-semantic-search-openai-accelerator)
+
+## Looking for Azure OpenAI Lecture Generation (text-to-speech) Demo?
+- [Azure OpenAI Lecture Generation Demo](https://github.com/MaheshSQL/openai-lecture-generation)
